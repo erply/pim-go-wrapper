@@ -2,8 +2,8 @@ package client_with_default_transport
 
 import (
 	"context"
+	"github.com/erply/pim-go-wrapper/pkg/pim"
 	"github.com/sirupsen/logrus"
-	"my_workspace/sdks/pim-go-wrapper/pkg/pim"
 	"net/http"
 	"net/url"
 )
