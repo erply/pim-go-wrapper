@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,9 +21,13 @@ type Client struct {
 	// Base URL for API requests. BaseURL should
 	// always be specified with a trailing slash.
 	baseURL    *url.URL
-	httpClient *http.Client // HTTP pimclient used to communicate with the API.
+	httpClient *http.Client // HTTP client used to communicate with the API.
 	// User agent used when communicating with the PIM API.
 	UserAgent string
+
+	common service
+	// Services used for talking to different parts of the PIM API.
+	WarehouseLocations *WarehouseLocationService
 }
 
 // NewClient returns a new PIM API client. If a nil httpClient is
@@ -37,6 +42,8 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	} else {
 		c.httpClient = getDefaultHTTPClient()
 	}
+	c.common.client = c
+	c.WarehouseLocations = (*WarehouseLocationService)(&c.common)
 	return c
 }
 
@@ -77,15 +84,25 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		// won't reuse it anyway.
 		const maxBodySlurpSize = 2 << 10
 		if resp.ContentLength == -1 || resp.ContentLength <= maxBodySlurpSize {
-			io.CopyN(ioutil.Discard, resp.Body, maxBodySlurpSize)
+			if _, err := io.CopyN(ioutil.Discard, resp.Body, maxBodySlurpSize); err != nil {
+				if err == io.EOF {
+					err = nil // ignore EOF errors caused by empty response body
+				} else {
+					logrus.Error(err)
+				}
+			}
 		}
 
-		resp.Body.Close()
+		if err := resp.Body.Close(); err != nil {
+			logrus.Errorf("%s when closing the response body", err)
+		}
 	}()
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			if _, err := io.Copy(w, resp.Body); err != nil {
+				return nil, err
+			}
 		} else {
 			decErr := json.NewDecoder(resp.Body).Decode(v)
 			if decErr == io.EOF {

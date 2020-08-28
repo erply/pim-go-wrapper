@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type LocationService service
+type WarehouseLocationService service
 
 type WarehouseLocations []WarehouseLocation
 type WarehouseLocation struct {
@@ -16,8 +16,8 @@ type WarehouseLocation struct {
 }
 
 // ListArtifacts lists all artifacts that belong to a repository.
-func (s *LocationService) GetWarehouseLocations(ctx context.Context, opts *ListOptions) (*WarehouseLocations, *http.Response, error) {
-	u := fmt.Sprintf("v1/warehouse/locations")
+func (s *WarehouseLocationService) Get(ctx context.Context, opts *ListOptions) (*WarehouseLocations, *http.Response, error) {
+	u := fmt.Sprintf("warehouse/locations")
 	u, err := addOptions(u, opts)
 	if err != nil {
 		return nil, nil, err

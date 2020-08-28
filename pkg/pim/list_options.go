@@ -3,7 +3,6 @@ package pim
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pingcap/log"
 	"github.com/pkg/errors"
 	"net/url"
 	"strconv"
@@ -57,7 +56,7 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 
 	u, err := url.Parse(s)
 	if err != nil {
-		return s, err
+		return "", err
 	}
 	q := u.Query()
 
@@ -71,39 +70,44 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 	if opts.SortingParameter != nil {
 		bytes, err := json.Marshal(opts.SortingParameter)
 		if err != nil {
-			return s, errors.Wrap(err, "could not parse sorting parameter")
+			return "", errors.Wrap(err, "could not parse sorting parameter")
 		}
-		log.Warn(string(bytes))
 		q.Add("sort", string(bytes))
 	}
 
 	//apply filters
 	if opts.Filters != nil {
-		var f []interface{}
-		for _, filterOrOperator := range opts.Filters {
-			if err := validateColumnFilterOperation(filterOrOperator.ColumnFilter[1]); err != nil {
-				return "", err
-			}
-			f = append(f, filterOrOperator.ColumnFilter)
-			if filterOrOperator.Operand != "" {
-				if err := validateFilteringOperand(filterOrOperator.Operand); err != nil {
-					return "", err
-				}
-				f = append(f, filterOrOperator.Operand)
-			}
-		}
-		bytes, err := json.Marshal(f)
+		filters, err := parseFilters(opts.Filters)
 		if err != nil {
-			return s, errors.Wrap(err, "could not parse filtering parameter")
+			return "", errors.Wrap(err, "could not parse filtering parameter")
 		}
-		log.Warn(string(bytes))
-		q.Add("filter", string(bytes))
+		q.Add("filter", filters)
 	}
 
 	u.RawQuery = q.Encode()
 	return u.String(), nil
 }
 
+func parseFilters(filters []Filter) (string, error) {
+	var f []interface{}
+	for _, filterOrOperator := range filters {
+		if err := validateColumnFilterOperation(filterOrOperator.ColumnFilter[1]); err != nil {
+			return "", err
+		}
+		f = append(f, filterOrOperator.ColumnFilter)
+		if filterOrOperator.Operand != "" {
+			if err := validateFilteringOperand(filterOrOperator.Operand); err != nil {
+				return "", err
+			}
+			f = append(f, filterOrOperator.Operand)
+		}
+	}
+	bytes, err := json.Marshal(f)
+	if err != nil {
+		return "", errors.Wrap(err, "could not parse filtering parameter")
+	}
+	return string(bytes), nil
+}
 func validateColumnFilterOperation(op interface{}) error {
 	okValues := []string{"=", ">=", "<=", "contains", "startswith"}
 	for _, v := range okValues {
