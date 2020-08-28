@@ -40,9 +40,6 @@ type (
 		//Price is just the default price of a product and the actual price applied in a particular location, to a particular customer, depends on price lists and promotions: https://learn-api.erply.com/concepts/pricing
 		Price float64 `json:"price"`
 
-		// NetWeight is Item's net weight. Unit depends on region, check your Erply account (typically lbs or kg).
-		NetWeight float64 `json:"net_weight"`
-
 		Physical
 		//0 or 1
 		IsGiftCard int `json:"is_gift_card"`
@@ -75,7 +72,10 @@ type (
 		DepositFeeID int `json:"deposit_fee_id"`
 
 		FamilyID int64 `json:"family_id"`
+
+		//These fields are not editable
 		AddedByChangedBy
+
 		*Attributes
 	}
 )
@@ -127,8 +127,8 @@ func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *
 	return id, resp, err
 }
 
-func (s *Products) Update(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
-	u := fmt.Sprintf("product/%d", product.ID)
+func (s *Products) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/%d", productID)
 
 	req, err := s.client.NewRequest(http.MethodPut, u, product)
 	if err != nil {
@@ -156,10 +156,10 @@ func (s *Products) UpdateType(ctx context.Context, productID int, productType st
 	return id, resp, err
 }
 
-func (s *Products) Delete(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
-	u := fmt.Sprintf("product/%d", product.ID)
+func (s *Products) Delete(ctx context.Context, productID int) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/%d", productID)
 
-	req, err := s.client.NewRequest(http.MethodDelete, u, product)
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

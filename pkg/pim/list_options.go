@@ -43,25 +43,27 @@ func NewPaginationParameters(skip, take uint) *PaginationParameters {
 }
 
 type Filter struct {
-	//ColumnFilter array represents a filter for a specific column. For example ["status","startswith","ACTIVE"] or ["group_id","<=","2"].
+	//Selector represents the name for a specific field. For example status, group_id
+	Selector string
 	//The possible filtering operations are: "=", ">=", "<=", "contains" and "startswith".
-	ColumnFilter *ColumnFilter
-	//Operand represents the connection of filters. Supported operands: and,or.
-	Operand string
-}
-
-type ColumnFilter struct {
-	Selector  string
 	Operation string
-	Value     interface{}
+	//Value is the filter value of any type
+	Value interface{}
+	//Operand represents the connection of the filter to the next filter. Supported operands: and,or.
+	OperandAfter string
 }
 
-func NewColumnFilter(selector, operation string, value interface{}) *ColumnFilter {
-	return &ColumnFilter{Selector: selector, Operation: operation, Value: value}
-}
-
-func NewFilter(columnFilter *ColumnFilter, operand string) *Filter {
-	return &Filter{ColumnFilter: columnFilter, Operand: operand}
+//NewFilter will validate the operation, operandAfter and return the filter
+func NewFilter(selector, operation string, value interface{}, operandAfter string) (*Filter, error) {
+	if operandAfter != "" {
+		if err := validateFilteringOperand(operandAfter); err != nil {
+			return nil, err
+		}
+	}
+	if err := validateColumnFilterOperation(operation); err != nil {
+		return nil, err
+	}
+	return &Filter{Selector: selector, Operation: operation, Value: value, OperandAfter: operandAfter}, nil
 }
 
 type SortingParameter struct {
@@ -124,16 +126,16 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 func parseFilters(filters []Filter) (string, error) {
 	var f []interface{}
 	for _, filterOrOperator := range filters {
-		if err := validateColumnFilterOperation(filterOrOperator.ColumnFilter.Operation); err != nil {
+		fo := filterOrOperator
+		if err := validateColumnFilterOperation(fo.Operation); err != nil {
 			return "", err
 		}
-		cf := filterOrOperator.ColumnFilter
-		f = append(f, [3]interface{}{cf.Selector, cf.Operation, cf.Value})
-		if filterOrOperator.Operand != "" {
-			if err := validateFilteringOperand(filterOrOperator.Operand); err != nil {
+		f = append(f, [3]interface{}{fo.Selector, fo.Operation, fo.Value})
+		if fo.OperandAfter != "" {
+			if err := validateFilteringOperand(fo.OperandAfter); err != nil {
 				return "", err
 			}
-			f = append(f, filterOrOperator.Operand)
+			f = append(f, fo.OperandAfter)
 		}
 	}
 	bytes, err := json.Marshal(f)

@@ -34,6 +34,8 @@ type (
 		HTML      string `json:"html"`
 	}
 	Physical struct {
+		// NetWeight is Item's net weight. Unit depends on region, check your Erply account (typically lbs or kg).
+		NetWeight float64 `json:"net_weight"`
 		// GrossWeight is Item's gross weight (with packaging). Unit depends on region, check your Erply account (typically lbs or kg).
 		GrossWeight float64 `json:"gross_weight"`
 		// Length is Item's physical dimensions.
