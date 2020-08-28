@@ -1,4 +1,4 @@
-package pimclient
+package pim
 
 import (
 	"net"

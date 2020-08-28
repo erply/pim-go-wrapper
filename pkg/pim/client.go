@@ -1,5 +1,5 @@
 // Package pimclient provides logic for setting up the API pimclient
-package pimclient
+package pim
 
 import (
 	"bytes"

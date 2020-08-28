@@ -3,15 +3,15 @@ package client_with_default_transport
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"my_workspace/sdks/pim-go-wrapper/pkg/pimclient"
+	"my_workspace/sdks/pim-go-wrapper/pkg/pim"
 	"net/http"
 	"net/url"
 )
 
 func main() {
-	tp := pimclient.NewDefaultAuthTransport("session", "123456", nil)
+	tp := pim.NewDefaultAuthTransport("session", "123456", nil)
 	baseURL, _ := url.Parse("https://pim-example.erply.com/")
-	cli := pimclient.NewClient(baseURL, tp.Client())
+	cli := pim.NewClient(baseURL, tp.Client())
 	ctx := context.Background()
 
 	resp := new(interface{})
