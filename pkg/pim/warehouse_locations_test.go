@@ -41,8 +41,8 @@ func TestLocationService_GetWarehouseLocations(t *testing.T) {
 ]`)
 	})
 
-	opts := NewListOptions(nil, nil, nil)
-	locations, _, err := client.WarehouseLocations.Get(context.Background(), opts)
+	opts := NewListOptions(nil, nil, nil, false)
+	locations, _, err := client.WarehouseLocations.Read(context.Background(), opts)
 	if err != nil {
 		t.Errorf("GET warehouse locations returned error: %v", err)
 	}

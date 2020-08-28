@@ -13,14 +13,25 @@ func main() {
 		baseURL, _ = url.Parse("https://xyz.erply.com/v1/")
 		cli        = pim.NewClient(baseURL, tp.Client())
 		ctx        = context.Background()
-		opts       = pim.NewListOptions(nil, nil, nil)
+		opts       = pim.NewListOptions(nil, nil, nil, false)
 	)
 
-	locations, httpResp, err := cli.WarehouseLocations.Get(ctx, opts)
+	p := &pim.Product{
+		Type:    "PRODUCT",
+		GroupID: 3,
+	}
+	newID, _, err := cli.Products.Create(ctx, p)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	logrus.Info(locations)
-	logrus.Info(httpResp.Status)
+
+	columnFilter := [3]interface{}{"id", "=", newID}
+	opts.Filters = append(opts.Filters, *pim.NewFilter(columnFilter, ""))
+	products, _, err := cli.Products.Read(ctx, opts)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	logrus.Info(products)
 }

@@ -27,7 +27,8 @@ type Client struct {
 
 	common service
 	// Services used for talking to different parts of the PIM API.
-	WarehouseLocations *WarehouseLocationService
+	WarehouseLocations *WarehouseLocations
+	Products           *Products
 }
 
 // NewClient returns a new PIM API client. If a nil httpClient is
@@ -43,7 +44,8 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 		c.httpClient = getDefaultHTTPClient()
 	}
 	c.common.client = c
-	c.WarehouseLocations = (*WarehouseLocationService)(&c.common)
+	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
+	c.Products = (*Products)(&c.common)
 	return c
 }
 

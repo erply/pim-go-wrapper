@@ -24,10 +24,13 @@ type ListOptions struct {
 	//3) language: example value: gr, is used to sort by translatable fields such as name.
 	//Example value: {selector:added,desc:true,language:gr}
 	SortingParameter *SortingParameter
+
+	//WithTotalCount is a boolean parameter to optionally return total number of records in the X-Total-Count response header
+	WithTotalCount bool
 }
 
-func NewListOptions(filters []Filter, paginationParameters *PaginationParameters, sortingParameter *SortingParameter) *ListOptions {
-	return &ListOptions{Filters: filters, PaginationParameters: paginationParameters, SortingParameter: sortingParameter}
+func NewListOptions(filters []Filter, paginationParameters *PaginationParameters, sortingParameter *SortingParameter, withTotalCount bool) *ListOptions {
+	return &ListOptions{Filters: filters, PaginationParameters: paginationParameters, SortingParameter: sortingParameter, WithTotalCount: withTotalCount}
 }
 
 type PaginationParameters struct {
@@ -42,12 +45,22 @@ func NewPaginationParameters(skip, take uint) *PaginationParameters {
 type Filter struct {
 	//ColumnFilter array represents a filter for a specific column. For example ["status","startswith","ACTIVE"] or ["group_id","<=","2"].
 	//The possible filtering operations are: "=", ">=", "<=", "contains" and "startswith".
-	ColumnFilter [3]interface{}
+	ColumnFilter *ColumnFilter
 	//Operand represents the connection of filters. Supported operands: and,or.
 	Operand string
 }
 
-func NewFilter(columnFilter [3]interface{}, operand string) *Filter {
+type ColumnFilter struct {
+	Selector  string
+	Operation string
+	Value     interface{}
+}
+
+func NewColumnFilter(selector, operation string, value interface{}) *ColumnFilter {
+	return &ColumnFilter{Selector: selector, Operation: operation, Value: value}
+}
+
+func NewFilter(columnFilter *ColumnFilter, operand string) *Filter {
 	return &Filter{ColumnFilter: columnFilter, Operand: operand}
 }
 
@@ -100,6 +113,10 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 		q.Add("filter", filters)
 	}
 
+	if opts.WithTotalCount {
+		q.Add("withTotalCount", "true")
+	}
+
 	u.RawQuery = q.Encode()
 	return u.String(), nil
 }
@@ -107,10 +124,11 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 func parseFilters(filters []Filter) (string, error) {
 	var f []interface{}
 	for _, filterOrOperator := range filters {
-		if err := validateColumnFilterOperation(filterOrOperator.ColumnFilter[1]); err != nil {
+		if err := validateColumnFilterOperation(filterOrOperator.ColumnFilter.Operation); err != nil {
 			return "", err
 		}
-		f = append(f, filterOrOperator.ColumnFilter)
+		cf := filterOrOperator.ColumnFilter
+		f = append(f, [3]interface{}{cf.Selector, cf.Operation, cf.Value})
 		if filterOrOperator.Operand != "" {
 			if err := validateFilteringOperand(filterOrOperator.Operand); err != nil {
 				return "", err

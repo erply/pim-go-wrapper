@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type (
-	ProductService service
-	Products       []Product
-	Product        struct {
+	Products service
+	Product  struct {
 		ID int `json:"id"`
 		// Product type, possible types are 'PRODUCT', 'BUNDLE', 'MATRIX', 'ASSEMBLY'. By default 'PRODUCT'.
 		Type string `json:"type"`
@@ -80,7 +80,7 @@ type (
 	}
 )
 
-func (s *ProductService) Get(ctx context.Context, opts *ListOptions) (*Products, *http.Response, error) {
+func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *http.Response, error) {
 	u := fmt.Sprintf("product")
 	u, err := addOptions(u, opts)
 	if err != nil {
@@ -92,20 +92,79 @@ func (s *ProductService) Get(ctx context.Context, opts *ListOptions) (*Products,
 		return nil, nil, err
 	}
 
-	dataResp := new(Products)
+	dataResp := new([]Product)
 	resp, err := s.client.Do(ctx, req, dataResp)
 	return dataResp, resp, err
 }
 
-/*func (s *ProductService) Post(ctx context.Context, product *Product) () {
-	u := fmt.Sprintf("product")
+func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
+	u := fmt.Sprintf("product/%s", strings.Join(ids, ";"))
+	u, err := addOptions(u, opts)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	dataResp := new(Products)
+	dataResp := new([]Product)
 	resp, err := s.client.Do(ctx, req, dataResp)
 	return dataResp, resp, err
-}*/
+}
+
+func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product")
+
+	req, err := s.client.NewRequest(http.MethodPost, u, product)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(IDResponse)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}
+
+func (s *Products) Update(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/%d", product.ID)
+
+	req, err := s.client.NewRequest(http.MethodPut, u, product)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(IDResponse)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}
+
+func (s *Products) UpdateType(ctx context.Context, productID int, productType string) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/%d", productID)
+
+	t := struct {
+		Type string `json:"type"`
+	}{Type: productType}
+	req, err := s.client.NewRequest(http.MethodPatch, u, t)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(IDResponse)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}
+
+func (s *Products) Delete(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/%d", product.ID)
+
+	req, err := s.client.NewRequest(http.MethodDelete, u, product)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(IDResponse)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}

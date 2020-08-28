@@ -9,35 +9,23 @@ func TestAddOptions(t *testing.T) {
 	url := "http://example.com"
 	opts := &ListOptions{
 		Filters: []Filter{
-			{
-				ColumnFilter: [3]interface{}{"status", "=", "ACTIVE"},
-				Operand:      "and",
-			},
-			{
-				ColumnFilter: [3]interface{}{"type", "=", "BUNDLE"},
-			},
+			*NewFilter(NewColumnFilter("status", "=", "ACTIVE"), "and"),
+			*NewFilter(NewColumnFilter("type", "=", "BUNDLE"), ""),
 		},
-		PaginationParameters: &PaginationParameters{
-			Skip: 5,
-			Take: 2,
-		},
-		SortingParameter: &SortingParameter{
-			Selector: "added",
-			Desc:     true,
-			Language: "gr",
-		},
+		PaginationParameters: NewPaginationParameters(5, 2),
+		SortingParameter:     NewSortingParameter("added", true, "gr"),
 	}
 	_, err := addOptions(url, opts)
 	assert.NoError(t, err)
 
 	t.Run("not valid operator", func(t *testing.T) {
-		opts.Filters[1].ColumnFilter[1] = "==="
+		opts.Filters[1].ColumnFilter.Operation = "==="
 		_, err := addOptions(url, opts)
-		assert.EqualError(t, err, "unknown column filter operation ===, accepted values are [= >= <= contains startswith]")
+		assert.EqualError(t, err, "could not parse filtering parameter: unknown column filter operation ===, accepted values are [= >= <= contains startswith]")
 	})
 	t.Run("not valid column operand", func(t *testing.T) {
 		opts.Filters[0].Operand = "with"
 		_, err := addOptions(url, opts)
-		assert.EqualError(t, err, "unknown filtering operand with, accepted values are [and or]")
+		assert.EqualError(t, err, "could not parse filtering parameter: unknown filtering operand with, accepted values are [and or]")
 	})
 }
