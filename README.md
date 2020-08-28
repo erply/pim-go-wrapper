@@ -1,5 +1,5 @@
 # PIM Go SDK
-[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/erply/pim-go-wrapper/pkg/api?tab=doc)
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/erply/pim-go-wrapper/pkg/pim?tab=doc)
 
 Install
 -------
