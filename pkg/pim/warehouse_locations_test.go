@@ -41,12 +41,7 @@ func TestLocationService_GetWarehouseLocations(t *testing.T) {
 ]`)
 	})
 
-	opts := &ListOptions{
-		Filters:              nil,
-		PaginationParameters: nil,
-		SortingParameter:     nil,
-	}
-
+	opts := NewListOptions(nil, nil, nil)
 	locations, _, err := client.WarehouseLocations.Get(context.Background(), opts)
 	if err != nil {
 		t.Errorf("GET warehouse locations returned error: %v", err)

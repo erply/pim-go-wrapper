@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
-type WarehouseLocationService service
+type (
+	WarehouseLocationService service
+	WarehouseLocations       []WarehouseLocation
+	WarehouseLocation        struct {
+		DbRecord
+		Name string `json:"name"`
+		AddedByChangedBy
+	}
+)
 
-type WarehouseLocations []WarehouseLocation
-type WarehouseLocation struct {
-	DbRecord
-	Name string `json:"name"`
-	AddedByChangedBy
-}
-
-// ListArtifacts lists all artifacts that belong to a repository.
 func (s *WarehouseLocationService) Get(ctx context.Context, opts *ListOptions) (*WarehouseLocations, *http.Response, error) {
 	u := fmt.Sprintf("warehouse/locations")
 	u, err := addOptions(u, opts)

@@ -1,21 +1,26 @@
-package client_with_default_transport
+package main
 
 import (
 	"context"
 	"github.com/erply/pim-go-wrapper/pkg/pim"
 	"github.com/sirupsen/logrus"
-	"net/http"
 	"net/url"
 )
 
 func main() {
-	tp := pim.NewDefaultAuthTransport("session", "123456", nil)
-	baseURL, _ := url.Parse("https://pim-example.erply.com/")
-	cli := pim.NewClient(baseURL, tp.Client())
-	ctx := context.Background()
+	var (
+		tp         = pim.NewDefaultAuthTransport("", "", nil)
+		baseURL, _ = url.Parse("https://xyz.erply.com/v1/")
+		cli        = pim.NewClient(baseURL, tp.Client())
+		ctx        = context.Background()
+		opts       = pim.NewListOptions(nil, nil, nil)
+	)
 
-	resp := new(interface{})
-	req, _ := cli.NewRequest(http.MethodGet, "v1/product", resp)
-	httpResp, _ := cli.Do(ctx, req, resp)
-	logrus.Info(httpResp)
+	locations, httpResp, err := cli.WarehouseLocations.Get(ctx, opts)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	logrus.Info(locations)
+	logrus.Info(httpResp.Status)
 }

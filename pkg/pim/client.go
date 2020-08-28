@@ -104,17 +104,24 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 				return nil, err
 			}
 		} else {
-			decErr := json.NewDecoder(resp.Body).Decode(v)
+			errResp := bytes.Buffer{}
+			tee := io.TeeReader(resp.Body, &errResp)
+			decErr := json.NewDecoder(tee).Decode(v)
 			if decErr == io.EOF {
 				decErr = nil // ignore EOF errors caused by empty response body
 			}
 			if decErr != nil {
-				err = decErr
+				//if the response is not of expected structure perhaps that's an error response
+				ev := &MessageResponse{}
+				if err := json.NewDecoder(&errResp).Decode(ev); err != nil {
+					return nil, err
+				}
+				return nil, errors.New(ev.Message)
 			}
 		}
 	}
 
-	return resp, err
+	return resp, nil
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
@@ -141,7 +148,6 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 			return nil, err
 		}
 	}
-
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
 		return nil, err

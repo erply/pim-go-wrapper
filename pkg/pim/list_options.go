@@ -26,9 +26,17 @@ type ListOptions struct {
 	SortingParameter *SortingParameter
 }
 
+func NewListOptions(filters []Filter, paginationParameters *PaginationParameters, sortingParameter *SortingParameter) *ListOptions {
+	return &ListOptions{Filters: filters, PaginationParameters: paginationParameters, SortingParameter: sortingParameter}
+}
+
 type PaginationParameters struct {
 	Skip uint //skip n records
 	Take uint //amount to take
+}
+
+func NewPaginationParameters(skip, take uint) *PaginationParameters {
+	return &PaginationParameters{Skip: skip, Take: take}
 }
 
 type Filter struct {
@@ -39,12 +47,20 @@ type Filter struct {
 	Operand string
 }
 
+func NewFilter(columnFilter [3]interface{}, operand string) *Filter {
+	return &Filter{ColumnFilter: columnFilter, Operand: operand}
+}
+
 type SortingParameter struct {
 	//JSON field. For description: description_plain or description_html.
 	Selector string `json:"selector" example:"id"`
 	//Descending or Ascending direction switch
 	Desc     bool   `json:"desc"`
 	Language string `json:"language" example:"gr"`
+}
+
+func NewSortingParameter(selector string, desc bool, language string) *SortingParameter {
+	return &SortingParameter{Selector: selector, Desc: desc, Language: language}
 }
 
 // addOptions adds the parameters in opts as URL query parameters to s. opts
