@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/erply/pim-go-wrapper/pkg/pim"
 	"github.com/sirupsen/logrus"
 	"net/url"
@@ -9,8 +10,14 @@ import (
 
 func main() {
 	var (
-		tp         = pim.NewDefaultAuthTransport("", "", nil)
-		baseURL, _ = url.Parse("https://xyz.erply.com/v1/")
+		sess    = flag.String("sessionKey", "123123sdasd123", "session key")
+		cc      = flag.String("clientCode", "123456", "client code")
+		baseUrl = flag.String("baseUrl", "https://xyz/v1/", "base URL with version and slash")
+	)
+	flag.Parse()
+	var (
+		tp         = pim.NewDefaultAuthTransport(*sess, *cc, nil)
+		baseURL, _ = url.Parse(*baseUrl)
 		cli        = pim.NewClient(baseURL, tp.Client())
 		ctx        = context.Background()
 		opts       = pim.NewListOptions(nil, nil, nil, false)
