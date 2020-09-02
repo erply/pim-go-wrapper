@@ -127,6 +127,22 @@ func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *
 	return id, resp, err
 }
 
+func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkResponse, *http.Response, error) {
+	u := fmt.Sprintf("product/bulk")
+
+	type BulkProductRequest struct {
+		Requests []Product `json:"requests"`
+	}
+	req, err := s.client.NewRequest(http.MethodPost, u, BulkProductRequest{Requests: products})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ids := new(BulkResponse)
+	resp, err := s.client.Do(ctx, req, ids)
+	return ids, resp, err
+}
+
 func (s *Products) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
