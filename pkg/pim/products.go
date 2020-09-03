@@ -127,7 +127,7 @@ func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *
 	return id, resp, err
 }
 
-func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkResponse, *http.Response, error) {
+func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
 	u := fmt.Sprintf("product/bulk")
 
 	type BulkProductRequest struct {
@@ -138,9 +138,9 @@ func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkRes
 		return nil, nil, err
 	}
 
-	ids := new(BulkResponse)
-	resp, err := s.client.Do(ctx, req, ids)
-	return ids, resp, err
+	res := new(BulkResponseWithResults)
+	resp, err := s.client.Do(ctx, req, res)
+	return res, resp, err
 }
 
 func (s *Products) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
@@ -156,12 +156,32 @@ func (s *Products) Update(ctx context.Context, productID int, product *Product) 
 	return id, resp, err
 }
 
+func (s *Products) UpdateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
+	u := fmt.Sprintf("product/bulk")
+
+	type bulkUpdateProductRequest struct {
+		//products must contain IDs
+		Requests []Product
+	}
+
+	req, err := s.client.NewRequest(http.MethodPut, u, bulkUpdateProductRequest{Requests: products})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(BulkResponseWithResults)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}
+
+type UpdateProductTypeRequest struct {
+	Type string `json:"type"`
+}
+
 func (s *Products) UpdateType(ctx context.Context, productID int, productType string) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
-	t := struct {
-		Type string `json:"type"`
-	}{Type: productType}
+	t := UpdateProductTypeRequest{Type: productType}
 	req, err := s.client.NewRequest(http.MethodPatch, u, t)
 	if err != nil {
 		return nil, nil, err
@@ -170,6 +190,28 @@ func (s *Products) UpdateType(ctx context.Context, productID int, productType st
 	id := new(IDResponse)
 	resp, err := s.client.Do(ctx, req, id)
 	return id, resp, err
+}
+
+type UpdateProductTypeBulkRequest struct {
+	ID uint `json:"id"`
+	UpdateProductTypeRequest
+}
+
+func (s *Products) UpdateTypeBulk(ctx context.Context, productTypeRequests []UpdateProductTypeBulkRequest) (*BulkResponseWithResults, *http.Response, error) {
+	u := fmt.Sprintf("product/bulk")
+
+	type bulkUpdateProductTypeRequest struct {
+		Requests []UpdateProductTypeBulkRequest `json:"requests"`
+	}
+
+	req, err := s.client.NewRequest(http.MethodPatch, u, bulkUpdateProductTypeRequest{Requests: productTypeRequests})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	res := new(BulkResponseWithResults)
+	resp, err := s.client.Do(ctx, req, res)
+	return res, resp, err
 }
 
 func (s *Products) Delete(ctx context.Context, productID int) (*IDResponse, *http.Response, error) {
