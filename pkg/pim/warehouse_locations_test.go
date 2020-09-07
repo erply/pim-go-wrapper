@@ -3,17 +3,18 @@ package pim
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 )
 
-func TestLocationService_GetWarehouseLocations(t *testing.T) {
+func TestWarehouseLocations_Read(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/warehouse/locations", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodGet)
-		fmt.Fprint(w, `[
+		_, err := fmt.Fprint(w, `[
   {
     "id": 1,
     "name": "loc",
@@ -39,6 +40,7 @@ func TestLocationService_GetWarehouseLocations(t *testing.T) {
     "changedby": "12312312"
   }
 ]`)
+		assert.NoError(t, err)
 	})
 
 	opts := NewListOptions(nil, nil, nil, false)

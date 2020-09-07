@@ -2,7 +2,6 @@ package pim
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -16,13 +15,13 @@ type (
 )
 
 func (s *WarehouseLocations) Read(ctx context.Context, opts *ListOptions) (*[]WarehouseLocation, *http.Response, error) {
-	u := fmt.Sprintf("warehouse/locations")
-	u, err := addOptions(u, opts)
+	urlStr := "warehouse/locations"
+	u, err := addOptions(urlStr, opts)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -48,7 +48,7 @@ type (
 		Status string `json:"status" example:"ACTIVE"`
 	}
 
-	Attributes struct {
+	ProductAttributes struct {
 		DeliveryTime            string `json:"delivery_time"`
 		PackagingType           string `json:"packaging_type" `
 		AlcoholRegistryNumber   string `json:"alcohol_registry_number"`

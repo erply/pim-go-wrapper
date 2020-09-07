@@ -80,14 +80,14 @@ func NewSortingParameter(selector string, desc bool, language string) *SortingPa
 
 // addOptions adds the parameters in opts as URL query parameters to s. opts
 // must be a struct whose fields may contain "url" tags.
-func addOptions(s string, opts *ListOptions) (string, error) {
+func addOptions(s string, opts *ListOptions) (*url.URL, error) {
 	if opts == nil {
-		return "", nil
+		return nil, nil
 	}
 
 	u, err := url.Parse(s)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	q := u.Query()
 
@@ -101,7 +101,7 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 	if opts.SortingParameter != nil {
 		bytes, err := json.Marshal(opts.SortingParameter)
 		if err != nil {
-			return "", errors.Wrap(err, "could not parse sorting parameter")
+			return nil, errors.Wrap(err, "could not parse sorting parameter")
 		}
 		q.Add("sort", string(bytes))
 	}
@@ -110,7 +110,7 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 	if opts.Filters != nil {
 		filters, err := parseFilters(opts.Filters)
 		if err != nil {
-			return "", errors.Wrap(err, "could not parse filtering parameter")
+			return nil, errors.Wrap(err, "could not parse filtering parameter")
 		}
 		q.Add("filter", filters)
 	}
@@ -120,7 +120,29 @@ func addOptions(s string, opts *ListOptions) (string, error) {
 	}
 
 	u.RawQuery = q.Encode()
-	return u.String(), nil
+	return u, nil
+}
+
+//add semicolon separated list of IDs to the request
+func addIDs(url *url.URL, parameterName string, recordIDs ...int) (*url.URL, error) {
+	if len(recordIDs) > 100 {
+		return nil, errors.New("limit reached: up to 100 ids are allowed in the request")
+	}
+	if len(recordIDs) == 0 {
+		return url, nil
+	}
+	var recordIDsQueryString string
+	for i, id := range recordIDs {
+		if i == 0 {
+			recordIDsQueryString += strconv.Itoa(id)
+		} else {
+			recordIDsQueryString += ";" + strconv.Itoa(id)
+		}
+	}
+	q := url.Query()
+	q.Add(parameterName, recordIDsQueryString)
+	url.RawQuery = q.Encode()
+	return url, nil
 }
 
 func parseFilters(filters []Filter) (string, error) {

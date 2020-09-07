@@ -76,18 +76,18 @@ type (
 		//These fields are not editable
 		AddedByChangedBy
 
-		*Attributes
+		*ProductAttributes
 	}
 )
 
 func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *http.Response, error) {
-	u := fmt.Sprintf("product")
-	u, err := addOptions(u, opts)
+	urlStr := "product"
+	u, err := addOptions(urlStr, opts)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -98,13 +98,13 @@ func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *ht
 }
 
 func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
-	u := fmt.Sprintf("product/%s", strings.Join(ids, ";"))
-	u, err := addOptions(u, opts)
+	urlString := fmt.Sprintf("product/%s", strings.Join(ids, ";"))
+	u, err := addOptions(urlString, opts)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -115,7 +115,7 @@ func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOption
 }
 
 func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
-	u := fmt.Sprintf("product")
+	u := "product"
 
 	req, err := s.client.NewRequest(http.MethodPost, u, product)
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *
 }
 
 func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
-	u := fmt.Sprintf("product/bulk")
+	u := "product/bulk"
 
 	type BulkProductRequest struct {
 		Requests []Product `json:"requests"`
@@ -157,7 +157,7 @@ func (s *Products) Update(ctx context.Context, productID int, product *Product) 
 }
 
 func (s *Products) UpdateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
-	u := fmt.Sprintf("product/bulk")
+	u := "product/bulk"
 
 	type bulkUpdateProductRequest struct {
 		//products must contain IDs
@@ -198,7 +198,7 @@ type UpdateProductTypeBulkRequest struct {
 }
 
 func (s *Products) UpdateTypeBulk(ctx context.Context, productTypeRequests []UpdateProductTypeBulkRequest) (*BulkResponseWithResults, *http.Response, error) {
-	u := fmt.Sprintf("product/bulk")
+	u := "product/bulk"
 
 	type bulkUpdateProductTypeRequest struct {
 		Requests []UpdateProductTypeBulkRequest `json:"requests"`
