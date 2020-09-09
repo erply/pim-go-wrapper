@@ -9,16 +9,16 @@ type (
 	Attributes service
 	Attribute  struct {
 		//ID of the attribute
-		ID int `json:"id" example:"33"`
+		ID int `json:"id,omitempty" example:"33"`
 		//ID of the database record
-		RecordID int `json:"record_id" example:"7"`
+		RecordID int `json:"record_id,omitempty" example:"7"`
 		//Entity name of the record
-		Entity string `json:"entity" example:"product"`
+		Entity string `json:"entity,omitempty" example:"product"`
 		//3 types are available - int, double, text
-		Type string `json:"type" example:"text"`
-		Name string `json:"name" example:"has_warranty"`
+		Type string `json:"type,omitempty" example:"text"`
+		Name string `json:"name,omitempty" example:"has_warranty"`
 		//based on the type value can be number of text
-		Value interface{} `json:"value"`
+		Value interface{} `json:"value,omitempty"`
 	}
 )
 

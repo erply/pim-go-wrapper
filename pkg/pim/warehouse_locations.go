@@ -9,7 +9,7 @@ type (
 	WarehouseLocations service
 	WarehouseLocation  struct {
 		DbRecord
-		Name string `json:"name"`
+		Name string `json:"name,omitempty"`
 		AddedByChangedBy
 	}
 )
