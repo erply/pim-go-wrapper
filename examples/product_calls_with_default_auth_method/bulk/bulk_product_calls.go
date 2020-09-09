@@ -28,7 +28,7 @@ func main() {
 		GroupID:                     3,
 		TranslatableNameJSON:        pim.TranslatableNameJSON{Name: map[string]string{}},
 		TranslatableDescriptionJSON: pim.TranslatableDescriptionJSON{Description: map[string]pim.ProductDescription{}},
-		Attributes:                  &pim.Attributes{},
+		ProductAttributes:           &pim.ProductAttributes{},
 	}
 
 	var ps []pim.Product
