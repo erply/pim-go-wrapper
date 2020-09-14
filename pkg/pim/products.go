@@ -11,6 +11,15 @@ type (
 	Products service
 	Product  struct {
 		ID int `json:"id,omitempty"`
+		ProductRequest
+	}
+
+	BulkUpdateProductRequestItem struct {
+		ResourceID uint `json:"resourceId"`
+		ProductRequest
+	}
+
+	ProductRequest struct {
 		// Product type, possible types are 'PRODUCT', 'BUNDLE', 'MATRIX', 'ASSEMBLY'. By default 'PRODUCT'.
 		Type string `json:"type,omitempty"`
 		// ID of product group. To get the list of product groups, use getProductGroups.
@@ -114,7 +123,7 @@ func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOption
 	return dataResp, resp, err
 }
 
-func (s *Products) Create(ctx context.Context, product *Product) (*IDResponse, *http.Response, error) {
+func (s *Products) Create(ctx context.Context, product *ProductRequest) (*IDResponse, *http.Response, error) {
 	u := "product"
 
 	req, err := s.client.NewRequest(http.MethodPost, u, product)
@@ -143,6 +152,22 @@ func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkRes
 	return res, resp, err
 }
 
+func (s *Products) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkReadProductResponse, *http.Response, error) {
+	u := "product/bulk/get"
+
+	type BulkReadRequest struct {
+		Requests []ListOptions `json:"requests"`
+	}
+	req, err := s.client.NewRequest(http.MethodPost, u, BulkReadRequest{Requests: requests})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	res := new(BulkReadProductResponse)
+	resp, err := s.client.Do(ctx, req, res)
+	return res, resp, err
+}
+
 func (s *Products) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
@@ -156,15 +181,15 @@ func (s *Products) Update(ctx context.Context, productID int, product *Product) 
 	return id, resp, err
 }
 
-func (s *Products) UpdateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
+type BulkUpdateProductRequest struct {
+	//products must contain IDs
+	Requests []BulkUpdateProductRequestItem
+}
+
+func (s *Products) UpdateBulk(ctx context.Context, products []BulkUpdateProductRequestItem) (*BulkResponseWithResults, *http.Response, error) {
 	u := "product/bulk"
 
-	type bulkUpdateProductRequest struct {
-		//products must contain IDs
-		Requests []Product
-	}
-
-	req, err := s.client.NewRequest(http.MethodPut, u, bulkUpdateProductRequest{Requests: products})
+	req, err := s.client.NewRequest(http.MethodPut, u, BulkUpdateProductRequest{Requests: products})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -193,7 +218,7 @@ func (s *Products) UpdateType(ctx context.Context, productID int, productType st
 }
 
 type UpdateProductTypeBulkRequest struct {
-	ID uint `json:"id"`
+	ResourceID uint `json:"resourceId"`
 	UpdateProductTypeRequest
 }
 

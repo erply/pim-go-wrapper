@@ -23,15 +23,15 @@ func main() {
 		ctx        = context.Background()
 	)
 
-	p := &pim.Product{
-		Type:                        "PRODUCT",
-		GroupID:                     3,
-		TranslatableNameJSON:        pim.TranslatableNameJSON{Name: map[string]string{}},
-		TranslatableDescriptionJSON: pim.TranslatableDescriptionJSON{Description: map[string]pim.ProductDescription{}},
-		ProductAttributes:           &pim.ProductAttributes{},
-	}
+	p := &pim.Product{}
 
-	var ps []pim.Product
+	p.Type = "PRODUCT"
+	p.GroupID = 3
+	p.TranslatableNameJSON = pim.TranslatableNameJSON{Name: map[string]string{}}
+	p.TranslatableDescriptionJSON = pim.TranslatableDescriptionJSON{Description: map[string]pim.ProductDescription{}}
+	p.ProductAttributes = &pim.ProductAttributes{}
+
+	var products []pim.Product
 	for i := 0; i < 10; i++ {
 		name := "name"
 		desc := "desc"
@@ -62,68 +62,109 @@ func main() {
 
 		p.TaxFree = 1
 		p.RewardPointsNotAllowed = 1
-		ps = append(ps, *p)
+		products = append(products, *p)
 	}
 
-	resp, httpResp, err := cli.Products.CreateBulk(ctx, ps)
+	logrus.Info("creating in bulk")
+	resp, httpResp, err := cli.Products.CreateBulk(ctx, products)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Error("create", err)
 		return
 	}
-	if httpResp.StatusCode != http.StatusCreated {
-		logrus.Error(httpResp.StatusCode)
+	if httpResp.StatusCode != http.StatusOK {
+		logrus.Error("create", httpResp.StatusCode)
 		return
 	}
 	var createdProducts []pim.Product
 	for i, res := range resp.Results {
-		if res.ID != 0 {
-			ps[i].ID = res.ID
-			createdProducts = append(createdProducts, ps[i])
+		if res.ResourceID != 0 {
+			products[i].ID = res.ResourceID
+			createdProducts = append(createdProducts, products[i])
 		}
 	}
-	var updateTypeReqs []pim.UpdateProductTypeBulkRequest
-	for i := range createdProducts {
+	var (
+		updateTypeReqs []pim.UpdateProductTypeBulkRequest
+		updateReqs     []pim.BulkUpdateProductRequestItem
+	)
+
+	for i, createdProduct := range createdProducts {
 		if i%2 == 0 {
+			id := uint(createdProduct.ID)
+			logrus.Info("created product ID: ", id)
 			//changing a variation into a matrix product is not allowed
-			createdProducts[i].Type = "MATRIX"
+			u := pim.BulkUpdateProductRequestItem{
+				ResourceID: id,
+			}
+			u.Type = "MATRIX"
+			updateReqs = append(updateReqs, u)
 			updateTypeReqs = append(updateTypeReqs, pim.UpdateProductTypeBulkRequest{
-				ID:                       uint(createdProducts[i].ID),
-				UpdateProductTypeRequest: pim.UpdateProductTypeRequest{Type: "MATRIX"},
+				ResourceID:               id,
+				UpdateProductTypeRequest: pim.UpdateProductTypeRequest{Type: u.Type},
 			})
 		}
 	}
 
-	resp, httpResp, err = cli.Products.UpdateBulk(ctx, createdProducts)
+	logrus.Info("updating in bulk")
+	resp, httpResp, err = cli.Products.UpdateBulk(ctx, updateReqs)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Error("update", err)
 		return
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error(httpResp.StatusCode)
+		logrus.Error("update", httpResp.StatusCode)
 		return
 	}
-	logrus.Info(resp)
 
+	logrus.Info("updating types in bulk")
 	resp, httpResp, err = cli.Products.UpdateTypeBulk(ctx, updateTypeReqs)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Error("update type", err)
 		return
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error(httpResp.StatusCode)
+		logrus.Error("update type", httpResp.StatusCode)
 		return
 	}
-	logrus.Info(resp)
 
-	//clean up
+	typeFilter, err := pim.NewFilter("type", "=", "PRODUCT", "")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	logrus.Info("reading in bulk")
+	bulkReadResponse, httpResp, err := cli.Products.ReadBulk(ctx, []pim.ListOptions{
+		{
+			Filters: []pim.Filter{
+				*typeFilter,
+			},
+			PaginationParameters: nil,
+			SortingParameter:     nil,
+			WithTotalCount:       true,
+		},
+		{},
+	})
+	if err != nil {
+		logrus.Error(err)
+	}
+	if httpResp.StatusCode != http.StatusOK {
+		logrus.Error(httpResp.Status)
+		return
+	}
+
+	for _, item := range bulkReadResponse.Results {
+		logrus.Info("result ID: ", item.ResultID, " , total count: ", item.TotalCount, ", total product records: ", len(item.Products))
+	}
+
+	logrus.Info("deleting the items")
 	for _, p := range createdProducts {
 		_, httpResp, err := cli.Products.Delete(ctx, p.ID)
 		if err != nil {
-			logrus.Error(err)
+			logrus.Error("delete", err)
 			return
 		}
 		if httpResp.StatusCode != http.StatusOK {
-			logrus.Error(httpResp.StatusCode)
+			logrus.Error("delete", httpResp.StatusCode)
 			return
 		}
 	}

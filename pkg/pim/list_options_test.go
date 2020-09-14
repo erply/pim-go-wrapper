@@ -9,9 +9,9 @@ import (
 
 func TestAddOptions(t *testing.T) {
 	u := "http://example.com"
-	filter1, err := NewFilter("status", "=", "ACTIVE", "and")
+	filter1, err := NewFilter("status", "=", "ACTIVE", "")
 	assert.NoError(t, err)
-	filter2, err := NewFilter("type", "=", "BUNDLE", "")
+	filter2, err := NewFilter("type", "=", "BUNDLE", "and")
 	assert.NoError(t, err)
 	opts := &ListOptions{
 		Filters: []Filter{
@@ -30,7 +30,7 @@ func TestAddOptions(t *testing.T) {
 		assert.EqualError(t, err, "could not parse filtering parameter: unknown column filter operation ===, accepted values are [= >= <= contains startswith]")
 	})
 	t.Run("not valid column operand", func(t *testing.T) {
-		opts.Filters[0].OperandAfter = "with"
+		opts.Filters[0].OperandBefore = "with"
 		_, err := addOptions(u, opts)
 		assert.EqualError(t, err, "could not parse filtering parameter: unknown filtering operand with, accepted values are [and or]")
 	})

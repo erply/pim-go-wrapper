@@ -16,17 +16,17 @@ type ListOptions struct {
 	Filters []Filter
 
 	//PaginationParameters include skip and take integer parameters
-	PaginationParameters *PaginationParameters
+	PaginationParameters *PaginationParameters `json:"paginationParameters,omitempty"`
 
 	//SortingParameter is a JSON object with 3 fields -
 	//1) selector - field name, example value:added,
 	//2) desc - short for descending, value: true or false,
 	//3) language: example value: gr, is used to sort by translatable fields such as name.
 	//Example value: {selector:added,desc:true,language:gr}
-	SortingParameter *SortingParameter
+	SortingParameter *SortingParameter `json:"sortingParameters,omitempty"`
 
 	//WithTotalCount is a boolean parameter to optionally return total number of records in the X-Total-Count response header
-	WithTotalCount bool
+	WithTotalCount bool `json:"withTotalCount,omitempty"`
 }
 
 func NewListOptions(filters []Filter, paginationParameters *PaginationParameters, sortingParameter *SortingParameter, withTotalCount bool) *ListOptions {
@@ -44,34 +44,34 @@ func NewPaginationParameters(skip, take uint) *PaginationParameters {
 
 type Filter struct {
 	//Selector represents the name for a specific field. For example status, group_id
-	Selector string
+	Selector string `json:"fieldName,omitempty"`
 	//The possible filtering operations are: "=", ">=", "<=", "contains" and "startswith".
-	Operation string
+	Operation string `json:"operator,omitempty"`
 	//Value is the filter value of any type
-	Value interface{}
+	Value interface{} `json:"value,omitempty"`
 	//Operand represents the connection of the filter to the next filter. Supported operands: and,or.
-	OperandAfter string
+	OperandBefore string `json:"operandBefore,omitempty"`
 }
 
 //NewFilter will validate the operation, operandAfter and return the filter
-func NewFilter(selector, operation string, value interface{}, operandAfter string) (*Filter, error) {
-	if operandAfter != "" {
-		if err := validateFilteringOperand(operandAfter); err != nil {
+func NewFilter(selector, operation string, value interface{}, operandBefore string) (*Filter, error) {
+	if operandBefore != "" {
+		if err := validateFilteringOperand(operandBefore); err != nil {
 			return nil, err
 		}
 	}
 	if err := validateColumnFilterOperation(operation); err != nil {
 		return nil, err
 	}
-	return &Filter{Selector: selector, Operation: operation, Value: value, OperandAfter: operandAfter}, nil
+	return &Filter{Selector: selector, Operation: operation, Value: value, OperandBefore: operandBefore}, nil
 }
 
 type SortingParameter struct {
 	//JSON field. For description: description_plain or description_html.
-	Selector string `json:"selector" example:"id"`
+	Selector string `json:"selector,omitempty" example:"id"`
 	//Descending or Ascending direction switch
-	Desc     bool   `json:"desc"`
-	Language string `json:"language" example:"gr"`
+	Desc     bool   `json:"desc,omitempty"`
+	Language string `json:"language,omitempty" example:"gr"`
 }
 
 func NewSortingParameter(selector string, desc bool, language string) *SortingParameter {
@@ -152,13 +152,14 @@ func parseFilters(filters []Filter) (string, error) {
 		if err := validateColumnFilterOperation(fo.Operation); err != nil {
 			return "", err
 		}
-		f = append(f, [3]interface{}{fo.Selector, fo.Operation, fo.Value})
-		if fo.OperandAfter != "" {
-			if err := validateFilteringOperand(fo.OperandAfter); err != nil {
+		if fo.OperandBefore != "" {
+			if err := validateFilteringOperand(fo.OperandBefore); err != nil {
 				return "", err
 			}
-			f = append(f, fo.OperandAfter)
+			f = append(f, fo.OperandBefore)
 		}
+
+		f = append(f, [3]interface{}{fo.Selector, fo.Operation, fo.Value})
 	}
 	bytes, err := json.Marshal(f)
 	if err != nil {
