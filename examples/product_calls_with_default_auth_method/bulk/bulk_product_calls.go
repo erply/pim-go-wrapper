@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func main() {
@@ -32,7 +33,7 @@ func main() {
 	p.ProductAttributes = &pim.ProductAttributes{}
 
 	var products []pim.Product
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		name := "name"
 		desc := "desc"
 		p.TranslatableNameJSON.Name["el"] = name
@@ -66,13 +67,19 @@ func main() {
 	}
 
 	logrus.Info("creating in bulk")
+	start := time.Now()
 	resp, httpResp, err := cli.Products.CreateBulk(ctx, products)
 	if err != nil {
-		logrus.Error("create", err)
+		logrus.Error("create ", err)
 		return
 	}
+	logrus.Infof("created %d products in %d ms", len(products), time.Now().Sub(start).Milliseconds())
 	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error("create", httpResp.StatusCode)
+		logrus.Error("create ", httpResp.StatusCode)
+		var resp []byte
+		if _, err := httpResp.Body.Read(resp); err == nil {
+			logrus.Error(string(resp))
+		}
 		return
 	}
 	var createdProducts []pim.Product
@@ -88,9 +95,9 @@ func main() {
 	)
 
 	for i, createdProduct := range createdProducts {
+		id := uint(createdProduct.ID)
+		logrus.Info("created product ID: ", id)
 		if i%2 == 0 {
-			id := uint(createdProduct.ID)
-			logrus.Info("created product ID: ", id)
 			//changing a variation into a matrix product is not allowed
 			u := pim.BulkUpdateProductRequestItem{
 				ResourceID: id,
@@ -157,6 +164,7 @@ func main() {
 	}
 
 	logrus.Info("deleting the items")
+	deleteStart := time.Now()
 	for _, p := range createdProducts {
 		_, httpResp, err := cli.Products.Delete(ctx, p.ID)
 		if err != nil {
@@ -168,5 +176,6 @@ func main() {
 			return
 		}
 	}
+	logrus.Infof("created %d project in %d ms", len(products), time.Now().Sub(deleteStart).Milliseconds())
 
 }
