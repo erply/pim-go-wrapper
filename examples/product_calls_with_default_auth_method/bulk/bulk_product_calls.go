@@ -33,7 +33,7 @@ func main() {
 	p.ProductAttributes = &pim.ProductAttributes{}
 
 	var products []pim.Product
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 100; i++ {
 		name := "name"
 		desc := "desc"
 		p.TranslatableNameJSON.Name["el"] = name
@@ -176,6 +176,6 @@ func main() {
 			return
 		}
 	}
-	logrus.Infof("created %d project in %d ms", len(products), time.Now().Sub(deleteStart).Milliseconds())
+	logrus.Infof("deleted %d products in %d s", len(products), time.Now().Sub(deleteStart).Seconds())
 
 }
