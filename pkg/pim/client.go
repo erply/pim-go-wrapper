@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -73,10 +73,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 		// the context's error is probably more useful.
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, errors.Wrap(ctx.Err(), "context")
 		default:
 		}
-		return nil, err
+		return nil, errors.Wrap(err, "client Do")
 	}
 
 	defer func() {
@@ -105,7 +105,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			if _, err := io.Copy(w, resp.Body); err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "io.Copy failed reading the body")
 			}
 		} else {
 			errResp := bytes.Buffer{}
@@ -120,7 +120,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 				if err := json.NewDecoder(&errResp).Decode(ev); err != nil {
 					return nil, err
 				}
-				return nil, errors.New(ev.Message)
+				return nil, errors.Wrap(errors.New(ev.Message), "got error response with message")
 			}
 		}
 	}
