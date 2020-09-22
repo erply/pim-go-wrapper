@@ -30,6 +30,7 @@ type Client struct {
 	WarehouseLocations *WarehouseLocations
 	Products           *Products
 	Attributes         *Attributes
+	Brands             *Brands
 }
 
 // NewClient returns a new PIM API client. If a nil httpClient is
@@ -48,6 +49,7 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
 	c.Products = (*Products)(&c.common)
 	c.Attributes = (*Attributes)(&c.common)
+	c.Brands = (*Brands)(&c.common)
 	return c
 }
 
