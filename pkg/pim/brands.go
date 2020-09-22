@@ -8,8 +8,8 @@ import (
 type (
 	Brands service
 	Brand  struct {
-		ID   int64  `db:"id,omitempty"`
-		Name string `db:"name,omitempty"`
+		ID   int64  `json:"id,omitempty"`
+		Name string `json:"name,omitempty"`
 		AddedByChangedBy
 	}
 )
