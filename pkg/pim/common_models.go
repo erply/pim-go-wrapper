@@ -1,6 +1,9 @@
 package pim
 
 type (
+	BulkReadRequest struct {
+		Requests []ListOptions `json:"requests"`
+	}
 	DbRecord struct {
 		//object ID
 		ID int `json:"id,omitempty"`
@@ -21,6 +24,17 @@ type (
 	AddedByChangedBy struct {
 		AddedAddedBy
 		ChangedChangedBy
+	}
+
+	AddedByIDChangedByID struct {
+		//Unix timestamp
+		Added int64 `json:"added" example:"1595230999"`
+		//user ID
+		AddedByID int `json:"addedby_id" example:"1"`
+		//Unix timestamp
+		Changed int64 `json:"changed" example:"1595230999"`
+		//user ID
+		ChangedByID int64 `json:"changedby_id" example:"1"`
 	}
 
 	TranslatableNameJSON struct {

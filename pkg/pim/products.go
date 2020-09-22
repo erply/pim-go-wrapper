@@ -155,9 +155,6 @@ func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkRes
 func (s *Products) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkReadProductResponse, *http.Response, error) {
 	u := "product/bulk/get"
 
-	type BulkReadRequest struct {
-		Requests []ListOptions `json:"requests"`
-	}
 	req, err := s.client.NewRequest(http.MethodPost, u, BulkReadRequest{Requests: requests})
 	if err != nil {
 		return nil, nil, err

@@ -46,9 +46,6 @@ type (
 func (s *Brands) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkBrandsResponse, *http.Response, error) {
 	u := "brand/bulk/get"
 
-	type BulkReadRequest struct {
-		Requests []ListOptions `json:"requests"`
-	}
 	req, err := s.client.NewRequest(http.MethodPost, u, BulkReadRequest{Requests: requests})
 	if err != nil {
 		return nil, nil, err

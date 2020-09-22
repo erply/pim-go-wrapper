@@ -40,9 +40,6 @@ type (
 func (s *Categories) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkCategoriesResponse, *http.Response, error) {
 	u := "product/category/bulk/get"
 
-	type BulkReadRequest struct {
-		Requests []ListOptions `json:"requests"`
-	}
 	req, err := s.client.NewRequest(http.MethodPost, u, BulkReadRequest{Requests: requests})
 	if err != nil {
 		return nil, nil, err

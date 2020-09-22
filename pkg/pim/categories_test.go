@@ -35,7 +35,7 @@ func TestCategories_CreateBulk(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	categories := []CategoryRequest{{}}
+	categories := []CategoryRequest{}
 	results, _, err := client.Categories.CreateBulk(context.Background(), categories)
 	if err != nil {
 		t.Error(err)
