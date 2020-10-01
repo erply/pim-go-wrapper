@@ -84,5 +84,7 @@ type (
 		LabelsNotNeeded int `json:"labels_not_needed,omitempty"`
 
 		DepositFeeAmount int `json:"deposit_fee_amount,omitempty"`
+
+		ProductReorderMultiples int `json:"product_reorder_multiples"`
 	}
 )
