@@ -57,6 +57,54 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	return c
 }
 
+// NewClient returns a new PIM API client. If a nil httpClient is
+// provided, a wrapper's default http.Client will be used.
+//
+// Deprecated: NewClient exists for historical compatibility
+// and should not be used. To create the new client
+// use the NewAPIClient with the user agent parameter.
+func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
+	c := &Client{
+		baseURL:   baseURL,
+		UserAgent: "pim-wrapper",
+	}
+	if httpCli != nil {
+		c.httpClient = httpCli
+	} else {
+		c.httpClient = getDefaultHTTPClient()
+	}
+	c.common.client = c
+	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
+	c.Products = (*Products)(&c.common)
+	c.Attributes = (*Attributes)(&c.common)
+	c.Brands = (*Brands)(&c.common)
+	c.Categories = (*Categories)(&c.common)
+	c.Families = (*Families)(&c.common)
+	return c
+}
+
+// NewAPIClient returns a new PIM API client. If a nil httpClient is
+// provided, a wrapper's default http.Client will be used.
+func NewAPIClient(baseURL *url.URL, httpCli *http.Client, userAgent string) *Client {
+	c := &Client{
+		baseURL:   baseURL,
+		UserAgent: userAgent,
+	}
+	if httpCli != nil {
+		c.httpClient = httpCli
+	} else {
+		c.httpClient = getDefaultHTTPClient()
+	}
+	c.common.client = c
+	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
+	c.Products = (*Products)(&c.common)
+	c.Attributes = (*Attributes)(&c.common)
+	c.Brands = (*Brands)(&c.common)
+	c.Categories = (*Categories)(&c.common)
+	c.Families = (*Families)(&c.common)
+	return c
+}
+
 func (c *Client) Close() {
 	c.httpClient.CloseIdleConnections()
 }
