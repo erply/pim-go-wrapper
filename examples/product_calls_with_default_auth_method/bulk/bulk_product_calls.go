@@ -20,7 +20,7 @@ func main() {
 	var (
 		tp         = pim.NewDefaultAuthTransport(*sess, *cc, nil)
 		baseURL, _ = url.Parse(*baseUrl)
-		cli        = pim.NewClient(baseURL, tp.Client())
+		cli        = pim.NewAPIClient(baseURL, tp.Client(), "bulk_caller")
 		ctx        = context.Background()
 	)
 

@@ -18,19 +18,21 @@ func main() {
 	var (
 		tp         = pim.NewDefaultAuthTransport(*sess, *cc, nil)
 		baseURL, _ = url.Parse(*baseUrl)
-		cli        = pim.NewClient(baseURL, tp.Client())
+		cli        = pim.NewAPIClient(baseURL, tp.Client(), "product management code")
 		ctx        = context.Background()
 		opts       = pim.NewListOptions(nil, nil, nil, false)
 	)
 
 	p := &pim.Product{
-		Type:    "PRODUCT",
-		GroupID: 3,
-		TranslatableNameJSON: pim.TranslatableNameJSON{Name: map[string]string{
-			"en": "blablabla",
-		}},
+		ProductRequest: pim.ProductRequest{
+			Type:    "PRODUCT",
+			GroupID: 3,
+			TranslatableNameJSON: pim.TranslatableNameJSON{Name: map[string]string{
+				"en": "blablabla",
+			}},
+		},
 	}
-	resp, _, err := cli.Products.Create(ctx, p)
+	resp, _, err := cli.Products.Create(ctx, &p.ProductRequest)
 	if err != nil {
 		logrus.Error(err)
 		return

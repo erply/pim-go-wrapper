@@ -34,7 +34,7 @@ func setup() (client *Client, mux *http.ServeMux, serverURL string, teardown fun
 
 	// client is the PIM client being tested and is
 	// configured to use test server.
-	client = NewClient(&url.URL{}, nil)
+	client = NewAPIClient(&url.URL{}, nil, "pim_sdk_unit_testing")
 	client.baseURL, _ = url.Parse(server.URL + baseURLPath + "/")
 
 	return client, mux, server.URL, server.Close
