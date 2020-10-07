@@ -37,28 +37,6 @@ type Client struct {
 
 // NewClient returns a new PIM API client. If a nil httpClient is
 // provided, a wrapper's default http.Client will be used.
-func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
-	c := &Client{
-		baseURL:   baseURL,
-		UserAgent: "pim-wrapper",
-	}
-	if httpCli != nil {
-		c.httpClient = httpCli
-	} else {
-		c.httpClient = getDefaultHTTPClient()
-	}
-	c.common.client = c
-	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
-	c.Products = (*Products)(&c.common)
-	c.Attributes = (*Attributes)(&c.common)
-	c.Brands = (*Brands)(&c.common)
-	c.Categories = (*Categories)(&c.common)
-	c.Families = (*Families)(&c.common)
-	return c
-}
-
-// NewClient returns a new PIM API client. If a nil httpClient is
-// provided, a wrapper's default http.Client will be used.
 //
 // Deprecated: NewClient exists for historical compatibility
 // and should not be used. To create the new client
