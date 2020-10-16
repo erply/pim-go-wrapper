@@ -62,6 +62,14 @@ type (
 		Status string `json:"status,omitempty" example:"ACTIVE"`
 	}
 
+	//MoveRequest ..
+	MoveRequest struct {
+		//Target ID represents the record that the requested record is put after, or before, or becomes the last child of the record if the record has parent,e.g. is hierarchical
+		TargetID int `json:"target_id"`
+		//Position has to be  before | after (if the record has parent,e.g. is hierarchical, then lastChild position is also an option)
+		Position string `json:"position" example:"after"`
+	}
+
 	ProductAttributes struct {
 		DeliveryTime            string `json:"delivery_time,omitempty"`
 		PackagingType           string `json:"packaging_type,omitempty"`

@@ -41,7 +41,15 @@ type (
 		// Product's second code (by convention, EAN barcode). Must be UNIQUE, unless the account is configured otherwise.
 		Code2 string `json:"code2,omitempty"`
 		// Third code of the item (note that this field may not be visible on product card by default).
-		Code3 string `json:"code3,omitempty"`
+		Code3             string `json:"code3,omitempty"`
+		Code5             string `json:"code5,omitempty"`
+		Code6             string `json:"code6,omitempty"`
+		Code7             string `json:"code7,omitempty"`
+		Code8             string `json:"code8,omitempty"`
+		ExtraFieldOneID   int    `json:"extra_field1_id,omitempty"`
+		ExtraFieldTwoID   int    `json:"extra_field2_id,omitempty"`
+		ExtraFieldThreeID int    `json:"extra_field3_id,omitempty"`
+		ExtraFieldFourID  int    `json:"extra_field4_id,omitempty"`
 		// Supplier's product code
 		SupplierCode string `json:"supplier_code,omitempty"`
 		//TaxRateID is just the default tax rate of a product and the actual tax applied in a particular location depends on multiple rules: https://learn-api.erply.com/concepts/taxes.
