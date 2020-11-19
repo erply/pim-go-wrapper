@@ -90,6 +90,8 @@ type (
 
 		FamilyID int64 `json:"family_id,omitempty"`
 
+		AgeRestriction int `json:"age_restriction"`
+
 		//These fields are not editable
 		AddedByChangedBy
 
