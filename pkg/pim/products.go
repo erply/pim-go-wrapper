@@ -91,6 +91,7 @@ type (
 		FamilyID int64 `json:"family_id,omitempty"`
 
 		AgeRestriction int `json:"age_restriction"`
+		BackupID       int `json:"backup_id"`
 
 		//These fields are not editable
 		AddedByChangedBy

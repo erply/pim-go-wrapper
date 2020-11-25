@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"github.com/erply/pim-go-wrapper/pkg/pim"
 	"github.com/sirupsen/logrus"
@@ -12,9 +13,10 @@ import (
 
 func main() {
 	var (
-		sess    = flag.String("sessionKey", "sess", "session key")
-		cc      = flag.String("clientCode", "123456", "client code")
-		baseUrl = flag.String("baseUrl", "https://xyz/v1/", "base URL with version and slash")
+		sess             = flag.String("sessionKey", "sess", "session key")
+		cc               = flag.String("clientCode", "123456", "client code")
+		baseUrl          = flag.String("baseUrl", "https://xyz/v1/", "base URL with version and slash")
+		productsToCreate = flag.Int("amount-of-products", 0, "amount of products to create")
 	)
 	flag.Parse()
 	var (
@@ -32,150 +34,54 @@ func main() {
 	p.TranslatableDescriptionJSON = pim.TranslatableDescriptionJSON{Description: map[string]pim.ProductDescription{}}
 	p.ProductAttributes = &pim.ProductAttributes{}
 
-	var products []pim.Product
-	for i := 0; i < 100; i++ {
-		name := "name"
-		desc := "desc"
-		p.TranslatableNameJSON.Name["el"] = name
-		p.TranslatableNameJSON.Name["en"] = name
-		p.TranslatableNameJSON.Name["et"] = name
-		//add descriptions
-		p.TranslatableDescriptionJSON.Description["el"] = pim.ProductDescription{
-			PlainText: desc,
-			HTML:      desc,
-		}
-		p.TranslatableDescriptionJSON.Description["en"] = pim.ProductDescription{
-			PlainText: desc,
-			HTML:      desc,
-		}
-		p.TranslatableDescriptionJSON.Description["et"] = pim.ProductDescription{
-			PlainText: desc,
-			HTML:      desc,
-		}
-		//add some attributes
-		p.PackagingType = "t"
-		//let the request fail half of the times
-		if i%2 == 0 {
-			p.GroupID = 2
-		} else {
-			p.GroupID = 3
-		}
+	for i := 0; i < *productsToCreate/100; i++ {
+		products := []pim.Product{}
 
-		p.TaxFree = 1
-		p.RewardPointsNotAllowed = 1
-		products = append(products, *p)
-	}
-
-	logrus.Info("creating in bulk")
-	start := time.Now()
-	resp, httpResp, err := cli.Products.CreateBulk(ctx, products)
-	if err != nil {
-		logrus.Error("create ", err)
-		return
-	}
-	logrus.Infof("created %d products in %d ms", len(products), time.Now().Sub(start).Milliseconds())
-	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error("create ", httpResp.StatusCode)
-		var resp []byte
-		if _, err := httpResp.Body.Read(resp); err == nil {
-			logrus.Error(string(resp))
-		}
-		return
-	}
-	var createdProducts []pim.Product
-	for i, res := range resp.Results {
-		if res.ResourceID != 0 {
-			products[i].ID = res.ResourceID
-			createdProducts = append(createdProducts, products[i])
-		}
-	}
-	var (
-		updateTypeReqs []pim.UpdateProductTypeBulkRequest
-		updateReqs     []pim.BulkUpdateProductRequestItem
-	)
-
-	for i, createdProduct := range createdProducts {
-		id := uint(createdProduct.ID)
-		logrus.Info("created product ID: ", id)
-		if i%2 == 0 {
-			//changing a variation into a matrix product is not allowed
-			u := pim.BulkUpdateProductRequestItem{
-				ResourceID: id,
+		for i := 0; i < 100; i++ {
+			name := "name"
+			desc := "desc"
+			p.TranslatableNameJSON.Name["el"] = name
+			p.TranslatableNameJSON.Name["en"] = name
+			p.TranslatableNameJSON.Name["et"] = name
+			//add descriptions
+			p.TranslatableDescriptionJSON.Description["el"] = pim.ProductDescription{
+				PlainText: desc,
+				HTML:      desc,
 			}
-			u.Type = "MATRIX"
-			updateReqs = append(updateReqs, u)
-			updateTypeReqs = append(updateTypeReqs, pim.UpdateProductTypeBulkRequest{
-				ResourceID:               id,
-				UpdateProductTypeRequest: pim.UpdateProductTypeRequest{Type: u.Type},
-			})
+			p.TranslatableDescriptionJSON.Description["en"] = pim.ProductDescription{
+				PlainText: desc,
+				HTML:      desc,
+			}
+			p.TranslatableDescriptionJSON.Description["et"] = pim.ProductDescription{
+				PlainText: desc,
+				HTML:      desc,
+			}
+			//add some attributes
+			p.PackagingType = "t"
+			p.GroupID = 3
+
+			p.TaxFree = 1
+			p.RewardPointsNotAllowed = 1
+			products = append(products, *p)
 		}
-	}
 
-	logrus.Info("updating in bulk")
-	resp, httpResp, err = cli.Products.UpdateBulk(ctx, updateReqs)
-	if err != nil {
-		logrus.Error("update", err)
-		return
-	}
-	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error("update", httpResp.StatusCode)
-		return
-	}
-
-	logrus.Info("updating types in bulk")
-	resp, httpResp, err = cli.Products.UpdateTypeBulk(ctx, updateTypeReqs)
-	if err != nil {
-		logrus.Error("update type", err)
-		return
-	}
-	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error("update type", httpResp.StatusCode)
-		return
-	}
-
-	typeFilter, err := pim.NewFilter("type", "=", "PRODUCT", "")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	logrus.Info("reading in bulk")
-	bulkReadResponse, httpResp, err := cli.Products.ReadBulk(ctx, []pim.ListOptions{
-		{
-			Filters: []pim.Filter{
-				*typeFilter,
-			},
-			PaginationParameters: nil,
-			SortingParameter:     nil,
-			WithTotalCount:       true,
-		},
-		{},
-	})
-	if err != nil {
-		logrus.Error(err)
-	}
-	if httpResp.StatusCode != http.StatusOK {
-		logrus.Error(httpResp.Status)
-		return
-	}
-
-	for _, item := range bulkReadResponse.Results {
-		logrus.Info("result ID: ", item.ResultID, " , total count: ", item.TotalCount, ", total product records: ", len(item.Products))
-	}
-
-	logrus.Info("deleting the items")
-	deleteStart := time.Now()
-	for _, p := range createdProducts {
-		_, httpResp, err := cli.Products.Delete(ctx, p.ID)
+		logrus.Info("creating in bulk")
+		start := time.Now()
+		resp, httpResp, err := cli.Products.CreateBulk(ctx, products)
 		if err != nil {
-			logrus.Error("delete", err)
+			logrus.Error("create ", err)
 			return
 		}
+		logrus.Infof("created %d products in %d ms", len(products), time.Now().Sub(start).Milliseconds())
 		if httpResp.StatusCode != http.StatusOK {
-			logrus.Error("delete", httpResp.StatusCode)
+			logrus.Error("create ", httpResp.Status)
+			var resp []byte
+			if _, err := httpResp.Body.Read(resp); err == nil {
+				logrus.Error(string(resp))
+			}
 			return
 		}
+		j, _ := json.Marshal(resp.Results)
+		logrus.Info(string(j))
 	}
-	logrus.Infof("deleted %d products in %d s", len(products), time.Now().Sub(deleteStart).Seconds())
-
 }

@@ -41,3 +41,30 @@ func (s *Attributes) Read(ctx context.Context, opts *ListOptions, recordIDs ...i
 	resp, err := s.client.Do(ctx, req, dataResp)
 	return dataResp, resp, err
 }
+
+type AttributeRequest struct {
+	//ID of the attribute - used only to udpate
+	ID int `json:"id"`
+	//ID of the record
+	RecordID int `json:"record_id" example:"7"`
+	//Entity name of the record
+	Entity string `json:"entity" example:"product"`
+	//3 types are available - int, double, text
+	Type string `json:"type" example:"int"`
+	//name of the attribute
+	Name string `json:"name" example:"has_warranty"`
+	//based on the type value should be number of text
+	Value interface{} `json:"value"`
+}
+
+func (s *Attributes) Attach(ctx context.Context, request *AttributeRequest) (*IDResponse, *http.Response, error) {
+	u := "attribute"
+	req, err := s.client.NewRequest(http.MethodPut, u, request)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	id := new(IDResponse)
+	resp, err := s.client.Do(ctx, req, id)
+	return id, resp, err
+}
