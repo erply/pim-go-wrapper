@@ -14,6 +14,10 @@ func TestAttributes_Read(t *testing.T) {
 
 	mux.HandleFunc("/attribute", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodGet)
+
+		if r.URL.Query().Get("entityName") == "" {
+			fmt.Fprint(w, "entityName is required")
+		}
 		_, err := fmt.Fprint(w, `[
   {
      "entity": "product",
@@ -44,7 +48,7 @@ func TestAttributes_Read(t *testing.T) {
 	})
 
 	opts := NewListOptions(nil, nil, nil, false)
-	attributes, _, err := client.Attributes.Read(context.Background(), opts, 1, 2, 3)
+	attributes, _, err := client.Attributes.Read(context.Background(), opts, "product", 1, 2, 3)
 	if err != nil {
 		t.Error(err)
 	}

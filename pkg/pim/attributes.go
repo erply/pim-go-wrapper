@@ -26,7 +26,7 @@ type (
 	}
 )
 
-func (s *Attributes) Read(ctx context.Context, opts *ListOptions, recordIDs ...int) (*[]Attribute, *http.Response, error) {
+func (s *Attributes) Read(ctx context.Context, opts *ListOptions, entityName string, recordIDs ...int) (*[]Attribute, *http.Response, error) {
 	urlStr := "attribute"
 	u, err := addOptions(urlStr, opts)
 	if err != nil {
@@ -36,6 +36,11 @@ func (s *Attributes) Read(ctx context.Context, opts *ListOptions, recordIDs ...i
 	if err != nil {
 		return nil, nil, err
 	}
+
+	q := u.Query()
+	q.Add("entityName", entityName)
+	u.RawQuery = q.Encode()
+
 	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, nil, err
