@@ -75,7 +75,7 @@ func (s *Attributes) Attach(ctx context.Context, request *AttributeRequest) (*ID
 
 func (s *Attributes) Delete(ctx context.Context, ids []int) (*BulkResponse, *http.Response, error) {
 	if len(ids) < 1 {
-		return nil, nil, errors.New("need at least one attribute ID to delete attributes")
+		return nil, nil, errors.New("need at least one ID to delete")
 	}
 	var strIDs []string
 	for _, id := range ids {
