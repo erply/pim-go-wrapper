@@ -55,3 +55,28 @@ func TestAttributes_Read(t *testing.T) {
 	}
 
 }
+
+func TestAttributes_Delete(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/attribute/1;2;3", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodDelete)
+		_, err := fmt.Fprint(w, `
+{
+	"ids": [
+		1, 2, 3
+	]
+}
+`)
+		assert.NoError(t, err)
+	})
+
+	response, _, err := client.Attributes.Delete(context.Background(), []int{1, 2, 3})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, []int{1, 2, 3}, response.IDs)
+}

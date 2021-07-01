@@ -151,8 +151,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 			if decErr != nil {
 				//if the response is not of expected structure perhaps that's an error response
 				ev := &MessageResponse{}
-				if err := json.NewDecoder(&errResp).Decode(ev); err != nil {
-					return nil, err
+				tee = io.TeeReader(resp.Body, &errResp)
+				if err := json.NewDecoder(tee).Decode(ev); err != nil {
+					return nil, errors.Wrap(err, errResp.String())
 				}
 				return nil, errors.Wrap(errors.New(ev.Message), "got error response with message")
 			}

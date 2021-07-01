@@ -2,7 +2,11 @@ package pim
 
 import (
 	"context"
+	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type (
@@ -67,4 +71,25 @@ func (s *Attributes) Attach(ctx context.Context, request *AttributeRequest) (*ID
 	id := new(IDResponse)
 	resp, err := s.client.Do(ctx, req, id)
 	return id, resp, err
+}
+
+func (s *Attributes) Delete(ctx context.Context, ids []int) (*BulkResponse, *http.Response, error) {
+	if len(ids) < 1 {
+		return nil, nil, errors.New("need at least one attribute ID to delete attributes")
+	}
+	var strIDs []string
+	for _, id := range ids {
+		strIDs = append(strIDs, strconv.Itoa(id))
+	}
+
+	u := fmt.Sprintf("attribute/%s", strings.Join(strIDs, ";"))
+
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	bulkIds := new(BulkResponse)
+	resp, err := s.client.Do(ctx, req, bulkIds)
+	return bulkIds, resp, err
 }
