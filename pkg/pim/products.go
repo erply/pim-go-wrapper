@@ -55,7 +55,9 @@ type (
 		//TaxRateID is just the default tax rate of a product and the actual tax applied in a particular location depends on multiple rules: https://learn-api.erply.com/concepts/taxes.
 		TaxRateID int `json:"tax_rate_id,omitempty"`
 		//Price is just the default price of a product and the actual price applied in a particular location, to a particular customer, depends on price lists and promotions: https://learn-api.erply.com/concepts/pricing
-		Price float64 `json:"price,omitempty"`
+		Price        float64 `json:"price,omitempty"`
+
+		PriceWithTax float64 `json:"price_with_tax,omitempty"`
 
 		Physical
 		//0 or 1
