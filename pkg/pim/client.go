@@ -33,6 +33,7 @@ type Client struct {
 	Brands             *Brands
 	Categories         *Categories
 	Families           *Families
+	MatrixProducts     *MatrixProducts
 	ExtraFields        *ExtraFields
 	Suppliers          *Suppliers
 }
@@ -60,6 +61,7 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	c.Brands = (*Brands)(&c.common)
 	c.Categories = (*Categories)(&c.common)
 	c.Families = (*Families)(&c.common)
+	c.MatrixProducts = (*MatrixProducts)(&c.common)
 	c.Suppliers = (*Suppliers)(&c.common)
 	return c
 }
