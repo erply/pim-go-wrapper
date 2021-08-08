@@ -31,22 +31,15 @@ type (
 		DimensionValueOrder int64             `json:"dimension_value_order"`
 	}
 	Variation struct {
-		Code                 string            `json:"code"`
-		Code2                string            `json:"code2"`
-		DisplayedInWebshop   int64             `json:"displayed_in_webshop"`
-		ID                   int64             `json:"id"`
-		Name                 map[string]string `json:"name"`
-		ParentProductID      int64             `json:"parent_product_id"`
-		ParentProductName    map[string]string `json:"parent_product_name"`
-		Status               string            `json:"status"`
-		VariationDescription []struct {
-			DimensionID         int64             `json:"dimension_id"`
-			DimensionName       map[string]string `json:"dimension_name"`
-			DimensionValueCode  string            `json:"dimension_value_code"`
-			DimensionValueID    int64             `json:"dimension_value_id"`
-			DimensionValueName  map[string]string `json:"dimension_value_name"`
-			DimensionValueOrder int64             `json:"dimension_value_order"`
-		} `json:"variation_description"`
+		Code                 string                 `json:"code"`
+		Code2                string                 `json:"code2"`
+		DisplayedInWebshop   int64                  `json:"displayed_in_webshop"`
+		ID                   int64                  `json:"id"`
+		Name                 map[string]string      `json:"name"`
+		ParentProductID      int64                  `json:"parent_product_id"`
+		ParentProductName    map[string]string      `json:"parent_product_name"`
+		Status               string                 `json:"status"`
+		VariationDescription []VariationDescription `json:"variation_description"`
 	}
 
 	ProductWithVariations struct {
