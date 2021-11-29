@@ -26,6 +26,10 @@ type (
 		ProductID   int `json:"product_id"`
 	}
 
+	ProductAdditionalGroupsRequest struct {
+		Results []ProductAdditionalGroup `json:"results"`
+	}
+
 	ProductRequest struct {
 		// Product type, possible types are 'PRODUCT', 'BUNDLE', 'MATRIX', 'ASSEMBLY'. By default 'PRODUCT'.
 		Type string `json:"type,omitempty"`
@@ -140,9 +144,9 @@ func (s *Products) ReadAdditionalGroups(ctx context.Context, ids []string, opts 
 		return nil, nil, err
 	}
 
-	dataResp := new([]ProductAdditionalGroup)
+	dataResp := new(ProductAdditionalGroupsRequest)
 	resp, err := s.client.Do(ctx, req, dataResp)
-	return dataResp, resp, err
+	return &dataResp.Results, resp, err
 }
 
 func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
