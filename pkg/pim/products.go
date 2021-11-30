@@ -19,6 +19,17 @@ type (
 		ProductRequest
 	}
 
+	ProductAdditionalGroup struct {
+		AddedByChangedBy
+		GroupID     int `json:"group_id"`
+		ID          int `json:"id"`
+		ProductID   int `json:"product_id"`
+	}
+
+	ProductAdditionalGroupsRequest struct {
+		Results []ProductAdditionalGroup `json:"results"`
+	}
+
 	ProductRequest struct {
 		// Product type, possible types are 'PRODUCT', 'BUNDLE', 'MATRIX', 'ASSEMBLY'. By default 'PRODUCT'.
 		Type string `json:"type,omitempty"`
@@ -119,6 +130,23 @@ func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *ht
 	dataResp := new([]Product)
 	resp, err := s.client.Do(ctx, req, dataResp)
 	return dataResp, resp, err
+}
+
+func (s *Products) ReadAdditionalGroups(ctx context.Context, ids []string, opts PaginationParameters) (*[]ProductAdditionalGroup, *http.Response, error) {
+	urlStr := fmt.Sprintf("product/%s/additional-groups", strings.Join(ids, ";"))
+	u, err := addOptions(urlStr, &ListOptions{PaginationParameters: &opts})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dataResp := new(ProductAdditionalGroupsRequest)
+	resp, err := s.client.Do(ctx, req, dataResp)
+	return &dataResp.Results, resp, err
 }
 
 func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
