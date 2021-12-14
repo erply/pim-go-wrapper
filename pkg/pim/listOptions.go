@@ -168,7 +168,7 @@ func parseFilters(filters []Filter) (string, error) {
 	return string(bytes), nil
 }
 func validateColumnFilterOperation(op interface{}) error {
-	okValues := []string{"=", ">=", "<=", "contains", "startswith"}
+	okValues := []string{"=", ">=", "<=", "contains", "startswith", "in"}
 	for _, v := range okValues {
 		if op == v {
 			return nil
