@@ -138,6 +138,23 @@ func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOption
 	return dataResp, resp, err
 }
 
+func (s *Products) ReadAdditionalGroups(ctx context.Context, ids []string, opts PaginationParameters) (*[]ProductAdditionalGroup, *http.Response, error) {
+	urlStr := fmt.Sprintf("product/%s/additional-groups", strings.Join(ids, ";"))
+	u, err := addOptions(urlStr, &ListOptions{PaginationParameters: &opts})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dataResp := new(ProductAdditionalGroupsRequest)
+	resp, err := s.client.Do(ctx, req, dataResp)
+	return &dataResp.Results, resp, err
+}
+
 func (s *Products) Create(ctx context.Context, product *ProductRequest) (*IDResponse, *http.Response, error) {
 	u := "product"
 

@@ -2,9 +2,7 @@ package pim
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 )
 
 type (
@@ -19,14 +17,14 @@ type (
 			WarehouseID int `json:"warehouse_id"`
 		} `json:"location_tax_rates,omitempty"`
 		TranslatableNameJSON
-		TranslatableDescriptionJSON
-		NonDiscountable         int    `json:"non_discountable,omitempty"`
-		Order                   int    `json:"order,omitempty"`
-		ParentID                int    `json:"parent_id,omitempty"`
-		QuickBooksCreditAccount string `json:"quick_books_credit_account,omitempty"`
-		QuickBooksDebitAccount  string `json:"quick_books_debit_account,omitempty"`
-		RewardPoints            int    `json:"reward_points,omitempty"`
-		ShowInWebShop           int    `json:"show_in_webshop,omitempty"`
+		Description             map[string]string `json:"description,omitempty"`
+		NonDiscountable         int               `json:"non_discountable,omitempty"`
+		Order                   int               `json:"order,omitempty"`
+		ParentID                int               `json:"parent_id,omitempty"`
+		QuickBooksCreditAccount string            `json:"quick_books_credit_account,omitempty"`
+		QuickBooksDebitAccount  string            `json:"quick_books_debit_account,omitempty"`
+		RewardPoints            int               `json:"reward_points,omitempty"`
+		ShowInWebShop           int               `json:"show_in_webshop,omitempty"`
 		//These fields are not editable
 		AddedByChangedBy
 	}
@@ -58,21 +56,4 @@ func (s *Groups) Read(ctx context.Context, opts *ListOptions) (*[]ProductGroup, 
 	dataResp := new([]ProductGroup)
 	resp, err := s.client.Do(ctx, req, dataResp)
 	return dataResp, resp, err
-}
-
-func (s *Groups) ReadAdditionalGroups(ctx context.Context, ids []string, opts PaginationParameters) (*[]ProductAdditionalGroup, *http.Response, error) {
-	urlStr := fmt.Sprintf("product/%s/additional-groups", strings.Join(ids, ";"))
-	u, err := addOptions(urlStr, &ListOptions{PaginationParameters: &opts})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	req, err := s.client.NewRequest(http.MethodGet, u.String(), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	dataResp := new(ProductAdditionalGroupsRequest)
-	resp, err := s.client.Do(ctx, req, dataResp)
-	return &dataResp.Results, resp, err
 }
