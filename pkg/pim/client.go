@@ -29,6 +29,7 @@ type Client struct {
 	// Services used for talking to different parts of the PIM API.
 	WarehouseLocations *WarehouseLocations
 	Products           *Products
+	Groups             *Groups
 	Attributes         *Attributes
 	Brands             *Brands
 	Categories         *Categories
@@ -57,6 +58,7 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	c.common.client = c
 	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
 	c.Products = (*Products)(&c.common)
+	c.Groups = (*Groups)(&c.common)
 	c.Attributes = (*Attributes)(&c.common)
 	c.Brands = (*Brands)(&c.common)
 	c.Categories = (*Categories)(&c.common)
@@ -81,6 +83,7 @@ func NewAPIClient(baseURL *url.URL, httpCli *http.Client, userAgent string) *Cli
 	c.common.client = c
 	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
 	c.Products = (*Products)(&c.common)
+	c.Groups = (*Groups)(&c.common)
 	c.Attributes = (*Attributes)(&c.common)
 	c.Brands = (*Brands)(&c.common)
 	c.Categories = (*Categories)(&c.common)
