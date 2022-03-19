@@ -37,6 +37,7 @@ type Client struct {
 	MatrixProducts     *MatrixProducts
 	ExtraFields        *ExtraFields
 	Suppliers          *Suppliers
+	ProductUnits       *ProductUnits
 }
 
 // NewClient returns a new PIM API client. If a nil httpClient is
@@ -65,6 +66,7 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	c.Families = (*Families)(&c.common)
 	c.MatrixProducts = (*MatrixProducts)(&c.common)
 	c.Suppliers = (*Suppliers)(&c.common)
+	c.ProductUnits = (*ProductUnits)(&c.common)
 	return c
 }
 
@@ -90,6 +92,7 @@ func NewAPIClient(baseURL *url.URL, httpCli *http.Client, userAgent string) *Cli
 	c.Families = (*Families)(&c.common)
 	c.ExtraFields = (*ExtraFields)(&c.common)
 	c.Suppliers = (*Suppliers)(&c.common)
+	c.ProductUnits = (*ProductUnits)(&c.common)
 	return c
 }
 
